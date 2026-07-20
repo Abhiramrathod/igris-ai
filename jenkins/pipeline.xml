@@ -5,6 +5,9 @@
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps">
     <script>
 node {
+  stage('Checkout') {
+    git url: '@GIT_URL@', branch: '@GIT_BRANCH@'
+  }
   stage('Setup Build Tools') {
     sh 'mvn --version'
     sh 'node --version'

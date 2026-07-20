@@ -65,7 +65,10 @@ jobs:
 
       - name: Create Jenkins job
         run: |
-          java -jar jenkins-cli.jar -s http://localhost:2121/ create-job ai-igris < jenkins/pipeline.xml
+          GIT_URL="https://github.com/${{ github.repository }}.git"
+          GIT_BRANCH="${{ github.ref_name }}"
+          sed -e "s|@GIT_URL@|${GIT_URL}|g" -e "s|@GIT_BRANCH@|${GIT_BRANCH}|g" jenkins/pipeline.xml > pipeline-config.xml
+          java -jar jenkins-cli.jar -s http://localhost:2121/ create-job ai-igris < pipeline-config.xml
 
       - name: Monitor Jenkins build
         run: |
