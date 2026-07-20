@@ -14,136 +14,50 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checkout:
-    name: Checkout
+  jenkins:
+    name: Jenkins CI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Upload workspace
-        uses: actions/upload-artifact@v4
-        with:
-          name: workspace
-          path: .
-          retention-days: 1
+      - name: Build Jenkins image
+        run: docker compose -f docker-compose.jenkins.yml build
 
-  setup:
-    name: Setup Build Tools
-    needs: checkout
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v4
-        with:
-          name: workspace
+      - name: Start Jenkins
+        run: docker compose -f docker-compose.jenkins.yml up -d
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: "17"
-          distribution: temurin
-
-      - name: Download Maven
+      - name: Wait for Jenkins to be ready
         run: |
-          curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz -o maven.tar.gz
-          tar -xzf maven.tar.gz -C /opt
-          echo "/opt/apache-maven-3.9.16/bin" >> $GITHUB_PATH
-          rm maven.tar.gz
-
-      - name: Verify Maven
-        run: mvn --version
-
-  frontend:
-    name: Frontend Type Check
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v4
-        with:
-          name: workspace
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: ai-igris-ui/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-        working-directory: ai-igris-ui
-
-      - name: Type check
-        run: npx tsc --noEmit
-        working-directory: ai-igris-ui
-
-  backend:
-    name: Backend Build & Test
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download workspace
-        uses: actions/download-artifact@v4
-        with:
-          name: workspace
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: "17"
-          distribution: temurin
-
-      - name: Download Maven
-        run: |
-          curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz -o maven.tar.gz
-          tar -xzf maven.tar.gz -C /opt
-          echo "/opt/apache-maven-3.9.16/bin" >> $GITHUB_PATH
-          rm maven.tar.gz
-
-      - name: Initialize Kafka container
-        run: docker compose up -d kafka
-
-      - name: Wait for Kafka to be ready
-        run: |
-          echo "Waiting for Kafka to be ready..."
-          for i in $(seq 1 30); do
-            if echo > /dev/tcp/localhost/9092 2>/dev/null; then
-              echo "Kafka is ready!"
+          echo "Waiting for Jenkins..."
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2121 || true)
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "403" ]; then
+              echo "Jenkins is ready!"
               exit 0
             fi
-            echo "Waiting... ($i/30)"
-            sleep 2
+            echo "Waiting... ($i/60) status=$STATUS"
+            sleep 5
           done
-          echo "Kafka failed to start"
+          echo "Jenkins failed to start"
+          docker compose -f docker-compose.jenkins.yml logs jenkins
           exit 1
 
-      - name: Build with Maven
-        run: mvn -B clean verify
-
-      - name: Upload application JAR
-        if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        uses: actions/upload-artifact@v4
-        with:
-          name: ai-igris-app-${{ github.sha }}
-          path: ai-igris-app/target/*.jar
-          retention-days: 7
-          if-no-files-found: error
-
-      - name: Stop Kafka container
-        if: always()
-        run: docker compose down -v
-
-  validate:
-    name: Validate
-    if: always()
-    needs: [frontend, backend]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check all jobs passed
-        if: needs.frontend.result != 'success' || needs.backend.result != 'success'
+      - name: Monitor Jenkins build
         run: |
-          echo "One or more jobs failed."
-          echo "  frontend: ${{ needs.frontend.result }}"
-          echo "  backend: ${{ needs.backend.result }}"
-          exit 1
+          curl -sSL http://localhost:2121/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
+          echo "========================================="
+          echo "Jenkins UI: http://localhost:2121"
+          echo "========================================="
+          java -jar jenkins-cli.jar -s http://localhost:2121/ -auth admin:admin build ai-igris -v -s
+
+      - name: Get build log
+        if: always()
+        run: |
+          echo "========================================="
+          echo "Jenkins Console Output:"
+          echo "========================================="
+          java -jar jenkins-cli.jar -s http://localhost:2121/ -auth admin:admin console ai-igris -f 200 || true
+
+      - name: Stop Jenkins
+        if: always()
+        run: docker compose -f docker-compose.jenkins.yml down -v
