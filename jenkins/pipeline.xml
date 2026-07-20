@@ -6,20 +6,14 @@
     <script>
 node {
   stage('Setup Build Tools') {
-    sh '''
-      curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz | tar -xz -C $WORKSPACE
-    '''
-    env.PATH = "$WORKSPACE/apache-maven-3.9.16/bin:${env.PATH}"
     sh 'mvn --version'
+    sh 'node --version'
+    sh 'npm --version'
   }
   stage('Frontend Type Check') {
     dir('ai-igris-ui') {
-      sh '''
-        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-        apt-get install -y nodejs
-        npm ci
-        npx tsc --noEmit
-      '''
+      sh 'npm ci'
+      sh 'npx tsc --noEmit'
     }
   }
   stage('Initialize Kafka') {
