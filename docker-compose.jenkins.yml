@@ -14,6 +14,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/workspace
       - ./jenkins/init.groovy.d:/var/jenkins_home/init.groovy.d
+    user: root
     environment:
       JAVA_OPTS: >-
         -Djenkins.install.runSetupWizard=false
