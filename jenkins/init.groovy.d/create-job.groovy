@@ -10,16 +10,21 @@ def jlc = JenkinsLocationConfiguration.get()
 jlc.setUrl("http://localhost:2121")
 jlc.save()
 
-// Enable CLI over Remoting
+// Enable CLI
 instance.setDisableRemotingJnlp(false)
 
-// Create the pipeline job pointing to Jenkinsfile in workspace
-def job = new WorkflowJob(instance, "ai-igris")
-def flowDef = new CpsFlowDefinition(new File("/workspace/Jenkinsfile").text, true)
-job.setDefinition(flowDef)
+// Create pipeline job only if it doesn't exist
+def jobName = "ai-igris"
+def existingJob = Jenkins.instance.getItem(jobName)
+if (existingJob == null) {
+    def job = new WorkflowJob(instance, jobName)
+    def flowDef = new CpsFlowDefinition(new File("/workspace/Jenkinsfile").text, true)
+    job.setDefinition(flowDef)
+    instance.createProject(WorkflowJob, jobName)
+    instance.save()
+    println "Pipeline job '${jobName}' created successfully"
+} else {
+    println "Pipeline job '${jobName}' already exists, skipping creation"
+}
 
-instance.createProject(WorkflowJob, "ai-igris")
-instance.save()
-
-println "Pipeline job 'ai-igris' created successfully"
-println "Jenkins URL set to: http://localhost:2121"
+println "Jenkins URL: http://localhost:2121"

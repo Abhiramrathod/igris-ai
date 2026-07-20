@@ -14,7 +14,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/workspace
     environment:
-      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+      JAVA_OPTS: >-
+        -Djenkins.install.runSetupWizard=false
+        -Dhudson.model.DownloadService.noSignatureCheck=true
+        -Djenkins.model.JenkinsLocationConfiguration.url=http://localhost:2121
     networks:
       - jenkins-network
 

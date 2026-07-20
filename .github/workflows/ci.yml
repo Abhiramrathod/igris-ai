@@ -45,12 +45,10 @@ jobs:
       - name: Monitor Jenkins build
         run: |
           curl -sSL http://localhost:2121/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
-          echo ""
-          echo "========================================="
-          echo "Jenkins UI:"
-          echo "http://localhost:2121"
-          echo "========================================="
-          echo ""
+          echo "### 🚀 Jenkins Build Started" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Jenkins UI:** [http://localhost:2121](http://localhost:2121)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           java -jar jenkins-cli.jar -s http://localhost:2121/ -auth admin:admin build ai-igris -v -s
 
       - name: Get build log
