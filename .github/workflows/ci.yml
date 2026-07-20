@@ -33,31 +33,35 @@ jobs:
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2121 || true)
             if [ "$STATUS" = "200" ] || [ "$STATUS" = "403" ]; then
               echo "Jenkins is ready!"
-              exit 0
+              break
             fi
             echo "Waiting... ($i/60) status=$STATUS"
             sleep 5
           done
-          echo "Jenkins failed to start"
-          docker compose -f docker-compose.jenkins.yml logs jenkins
-          exit 1
+
+      - name: Setup Jenkins CLI
+        run: |
+          curl -sSL http://localhost:2121/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
+
+      - name: Create Jenkins job
+        run: |
+          java -jar jenkins-cli.jar -s http://localhost:2121/ create-job ai-igris < jenkins/pipeline.xml
 
       - name: Monitor Jenkins build
         run: |
-          curl -sSL http://localhost:2121/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
           echo "### 🚀 Jenkins Build Started" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Jenkins UI:** [http://localhost:2121](http://localhost:2121)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          java -jar jenkins-cli.jar -s http://localhost:2121/ -auth admin:admin build ai-igris -v -s
+          java -jar jenkins-cli.jar -s http://localhost:2121/ build ai-igris -v -s
 
       - name: Get build log
         if: always()
         run: |
-          echo "========================================="
-          echo "Jenkins Console Output:"
-          echo "========================================="
-          java -jar jenkins-cli.jar -s http://localhost:2121/ -auth admin:admin console ai-igris -f 200 || true
+          echo "### Jenkins Console Output" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          java -jar jenkins-cli.jar -s http://localhost:2121/ console ai-igris -f 200 >> $GITHUB_STEP_SUMMARY 2>&1 || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Stop Jenkins
         if: always()
