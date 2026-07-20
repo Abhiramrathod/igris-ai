@@ -4,44 +4,46 @@
   <properties/>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps">
     <script>
-stage('Setup Build Tools') {
-  sh '''
-    curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz | tar -xz -C /opt
-    mvn --version
-  '''
-}
-stage('Frontend Type Check') {
-  dir('ai-igris-ui') {
+node {
+  stage('Setup Build Tools') {
     sh '''
-      curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-      apt-get install -y nodejs
-      npm ci
-      npx tsc --noEmit
+      curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz | tar -xz -C /opt
+      mvn --version
     '''
   }
-}
-stage('Initialize Kafka') {
-  sh '''
-    docker compose up -d kafka
-    echo "Waiting for Kafka..."
-    for i in $(seq 1 30); do
-      if echo > /dev/tcp/kafka/29092 2>/dev/null; then
-        echo "Kafka is ready!"
-        exit 0
-      fi
-      echo "Waiting... ($i/30)"
-      sleep 2
-    done
-    echo "Kafka failed to start"
-    docker compose logs kafka
-    exit 1
-  '''
-}
-stage('Build and Test') {
-  sh 'mvn -B clean verify'
-}
-stage('Cleanup') {
-  sh 'docker compose down -v || true'
+  stage('Frontend Type Check') {
+    dir('ai-igris-ui') {
+      sh '''
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        apt-get install -y nodejs
+        npm ci
+        npx tsc --noEmit
+      '''
+    }
+  }
+  stage('Initialize Kafka') {
+    sh '''
+      docker compose up -d kafka
+      echo "Waiting for Kafka..."
+      for i in $(seq 1 30); do
+        if echo > /dev/tcp/kafka/29092 2>/dev/null; then
+          echo "Kafka is ready!"
+          exit 0
+        fi
+        echo "Waiting... ($i/30)"
+        sleep 2
+      done
+      echo "Kafka failed to start"
+      docker compose logs kafka
+      exit 1
+    '''
+  }
+  stage('Build and Test') {
+    sh 'mvn -B clean verify'
+  }
+  stage('Cleanup') {
+    sh 'docker compose down -v || true'
+  }
 }
     </script>
     <sandbox>true</sandbox>
