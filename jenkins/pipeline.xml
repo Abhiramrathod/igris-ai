@@ -22,9 +22,11 @@ node {
   stage('Initialize Kafka') {
     sh '''
       docker compose up -d kafka
+      KAFKA_CONTAINER=$(docker compose ps -q kafka)
+      docker network connect jenkins-network $KAFKA_CONTAINER 2>/dev/null || true
       echo "Waiting for Kafka..."
       for i in $(seq 1 30); do
-        if echo > /dev/tcp/kafka/29092 2>/dev/null; then
+        if docker exec $KAFKA_CONTAINER kafka-broker-api-versions --bootstrap-server localhost:9092 > /dev/null 2>&1; then
           echo "Kafka is ready!"
           exit 0
         fi
