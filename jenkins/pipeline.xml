@@ -39,7 +39,7 @@ node {
     '''
   }
   stage('Build and Test') {
-    sh 'mvn -B clean verify'
+    sh 'mvn -B clean verify -Dspring.cloud.stream.kafka.binder.brokers=kafka:29092'
   }
   stage('Cleanup') {
     sh 'docker compose down -v || true'
