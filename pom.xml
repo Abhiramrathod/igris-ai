@@ -31,6 +31,13 @@
         <java.version>17</java.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -69,9 +76,9 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.abhi</groupId>
-                <artifactId>kafka-sdk-starter</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <groupId>com.github.Abhiramrathod</groupId>
+                <artifactId>kafka-sdk</artifactId>
+                <version>1.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -86,9 +93,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.abhi</groupId>
-                <artifactId>kafka-sdk-starter</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <groupId>com.github.Abhiramrathod</groupId>
+                <artifactId>kafka-sdk</artifactId>
+                <version>1.0.1</version>
             </dependency>
             
             <dependency>
