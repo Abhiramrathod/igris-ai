@@ -2,7 +2,6 @@ package org.abhi.aigris.app.controller;
 
 import org.abhi.aigris.api.delegate.IAiDelegate;
 import org.abhi.aigris.llm.config.LlmConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,11 +15,13 @@ import java.util.Map;
 @RequestMapping("/ai")
 public class AiController {
 
-    @Autowired
-    private IAiDelegate aiDelegate;
+    private final IAiDelegate aiDelegate;
+    private final LlmConfig llmConfig;
 
-    @Autowired
-    private LlmConfig llmConfig;
+    public AiController(IAiDelegate aiDelegate, LlmConfig llmConfig) {
+        this.aiDelegate = aiDelegate;
+        this.llmConfig = llmConfig;
+    }
 
     @PostMapping("/chat")
     public ResponseEntity<String> chat(@RequestBody String prompt) {

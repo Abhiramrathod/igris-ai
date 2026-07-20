@@ -37,6 +37,14 @@ pipeline {
             }
         }
 
+        stage('Frontend Tests') {
+            steps {
+                dir('ai-igris-ui') {
+                    sh 'npx vitest run'
+                }
+            }
+        }
+
         stage('Initialize Kafka') {
             steps {
                 sh '''
