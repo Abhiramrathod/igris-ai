@@ -26,7 +26,7 @@ node {
       docker network connect jenkins-network $KAFKA_CONTAINER 2>/dev/null || true
       echo "Waiting for Kafka..."
       for i in $(seq 1 30); do
-        if docker exec $KAFKA_CONTAINER kafka-broker-api-versions --bootstrap-server localhost:9092 > /dev/null 2>&1; then
+        if docker exec $KAFKA_CONTAINER kafka-broker-api-versions --bootstrap-server localhost:9092 > /dev/null 2&gt;&amp;1; then
           echo "Kafka is ready!"
           exit 0
         fi
