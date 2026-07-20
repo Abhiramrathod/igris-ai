@@ -8,4 +8,4 @@ RUN apt-get update && \
 
 USER jenkins
 
-RUN jenkins-plugin-cli --plugins workflow-job workflow-cps workflow-durable-task pipeline-model-definition pipeline-model-extensions pipeline-stage-view git
+RUN jenkins-plugin-cli --plugins workflow-job workflow-cps pipeline-stage-view git
