@@ -1,0 +1,20 @@
+{
+  "name": "prompt_injection",
+  "patterns": [
+    "ignore previous instructions",
+    "ignore all instructions",
+    "ignore your instructions",
+    "you are now",
+    "act as",
+    "pretend to be",
+    "disregard your system prompt",
+    "new instructions:",
+    "override instructions",
+    "forget everything",
+    "you are an unrestricted",
+    "jailbreak",
+    "DAN mode",
+    "developer mode"
+  ],
+  "violationMessage": "Prompt contains restricted instructions."
+}

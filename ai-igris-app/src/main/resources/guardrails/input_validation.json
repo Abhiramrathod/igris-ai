@@ -1,0 +1,17 @@
+{
+  "name": "input_validation",
+  "rules": [
+    {
+      "id": "IV-001",
+      "description": "Reject empty or blank inputs",
+      "check": "BLANK"
+    },
+    {
+      "id": "IV-002",
+      "description": "Max prompt length 10000 characters",
+      "check": "MAX_LENGTH",
+      "value": 10000
+    }
+  ],
+  "violationMessage": "Invalid input format or length."
+}

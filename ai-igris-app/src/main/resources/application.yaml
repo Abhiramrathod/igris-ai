@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: ai-igris
+
+llm:
+  api-key: ${LLM_API_KEY:}
+  base-url: https://integrate.api.nvidia.com/v1
+  chatCompletionEndPoint: chat/completions
+  model: mistralai/mistral-small-4-119b-2603
+  max-tokens: 8192
+  temperature: 1
+  timeout-seconds: 300
+
+
+  cloud:
+    function:
+      definition: aiResponseConsumer
+    stream:
+      function:
+        bindings:
+          aiResponseConsumer-in-0:  aiResponseConsumer_subscribe
+      default:
+        content-type: application/json
+        producer:
+          partition-count: 6
+        consumer:
+          concurrency: 3
+      bindings:
+        ai_response_publish:
+          destination: ai-response-topic
+        aiResponseConsumer_subscribe:
+          destination: ai-response-topic
+          group: ai-response-group
+      kafka:
+        bindings:
+          aiResponseConsumer_subscribe:
+            consumer:
+              reset-offsets: true
+        binder:
+          brokers: localhost:9092
+      default-binder: kafka

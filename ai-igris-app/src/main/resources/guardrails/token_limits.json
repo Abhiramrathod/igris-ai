@@ -1,0 +1,6 @@
+{
+  "name": "token_limits",
+  "maxInputTokens": 4096,
+  "maxOutputTokens": 2048,
+  "violationMessage": "Token limit exceeded."
+}

@@ -1,0 +1,12 @@
+{
+  "name": "content_policy",
+  "blockedTerms": [
+    "hate speech",
+    "kill yourself",
+    "how to hack",
+    "how to make a bomb",
+    "child exploitation",
+    "terrorist attack"
+  ],
+  "violationMessage": "Content violates usage policy."
+}
