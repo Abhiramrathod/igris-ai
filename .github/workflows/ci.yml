@@ -43,9 +43,14 @@ jobs:
         run: |
           curl -sSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | tar -xz -C /usr/local/bin
           ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-          ngrok http 2121 --log=stdout > ngrok.log 2>&1 &
-          sleep 5
-          NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | python3 -c "import sys,json; print(json.load(sys.stdin)['tunnels'][0]['public_url'])")
+          nohup ngrok http 2121 --log=stdout > ngrok.log 2>&1 &
+          sleep 10
+          echo "=== ngrok logs ==="
+          cat ngrok.log
+          echo "=== ngrok tunnels ==="
+          curl -s http://localhost:4040/api/tunnels || echo "ngrok API not reachable"
+          NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | python3 -c "import sys,json; print(json.load(sys.stdin)['tunnels'][0]['public_url'])" 2>&1)
+          echo "NGROK_URL=$NGROK_URL"
           echo "### Jenkins UI (Live)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Click the link below to open Jenkins:**" >> $GITHUB_STEP_SUMMARY
