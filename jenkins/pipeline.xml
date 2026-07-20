@@ -21,7 +21,7 @@ node {
   }
   stage('Initialize Kafka') {
     sh '''
-      docker compose up -d kafka
+      sg docker -c "docker compose up -d kafka"
       echo "Waiting for Kafka..."
       for i in $(seq 1 30); do
         if echo > /dev/tcp/kafka/29092 2>/dev/null; then
@@ -32,7 +32,7 @@ node {
         sleep 2
       done
       echo "Kafka failed to start"
-      docker compose logs kafka
+      sg docker -c "docker compose logs kafka"
       exit 1
     '''
   }
@@ -40,7 +40,7 @@ node {
     sh 'mvn -B clean verify'
   }
   stage('Cleanup') {
-    sh 'docker compose down -v || true'
+    sh 'sg docker -c "docker compose down -v" || true'
   }
 }
     </script>
